@@ -79,7 +79,7 @@
             </table>
         </div>
     </div>
-
+    <!-- 模态框 -->
     <div class="modal fade" id="addModal">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -107,6 +107,26 @@
         </div>
     </div>
 
+    <!-- 确认框模态框 -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">温馨提示</h4>
+                </div>
+                <div class="modal-body">
+                    确认删除?
+                </div>
+                <div class="modal-footer">
+                        <button type="button" class="btn btn-default" id="model_shutoff">关闭</button>
+                    <button type="button" class="btn btn-primary btn-confirm">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         $('#addModal').modal({
             show: false,
@@ -118,10 +138,6 @@
             $('#addModal').modal('hide');
         });
 
-        // $('#model_add').click(function () {
-        //     alert('add');
-        //     $('#addModal').modal('hide');
-        // });
 
         $('.category_table').delegate('a', 'click', function () {
             if ($(this).hasClass('btn-info')) {
@@ -138,9 +154,8 @@
                 <td>{{$value.name}}</td>
                 <td>{{$value.slug}}</td>
                 <td class="text-center">
-                    <a href="javascript:editTr({&quot;id&quot;:&quot;4&quot;,&quot;slug&quot;:&quot;travel&quot;,&quot;name&quot;:&quot;爱旅行&quot;});"
-                        class="btn btn-info btn-xs">编辑</a>
-                    <a href="javascript:deleteTr( {{$value.id}} );" class="btn btn-danger btn-xs">删除</a>
+                    <a href="#" data-id={{$value.id}}  class="btn btn-info btn-xs btn-edit">编辑</a>
+                    <a href="#" data-id="{{$value.id}}" class="btn btn-danger btn-xs btn-delete">删除</a>
                 </td>
             </tr>
         {{/each}}
@@ -161,56 +176,88 @@
 
     <script>
 
-            $(function () {
+        $(function () {
 
 
-                function getData() {
-                    $.get({
-                        url: 'http://localhost:8000/admin/category_search',
-                        success: function (res) {
-                            if (res.code == 200) {
-                                var resHtml = template('tpl1', res);
-                                $('tbody').html(resHtml);
-                            }
+            function getData() {
+                $.get({
+                    url: 'http://localhost:8000/admin/category_search',
+                    success: function (res) {
+                        if (res.code == 200) {
+                            var resHtml = template('tpl1', res);
+                            $('tbody').html(resHtml);
                         }
-                    });
+                    }
+                });
 
-                }
-                getData();
+            }
+            getData();
 
 
-                $('#model_add').click(function () {
-                    var cateName = $('#recipient-name').val().trim();
-                    var cateSlug = $('#recipient-slug').val().trim();
+            $('#model_add').click(function () {
+                var cateName = $('#recipient-name').val().trim();
+                var cateSlug = $('#recipient-slug').val().trim();
 
+                $.post({
+                    url: 'http://localhost:8000/admin/category_add',
+                    data: {
+                        name: cateName,
+                        slug: cateSlug
+
+                    },
+                    success: function (res) {
+                        if (res.code == 200) {
+                            // location.reload();
+                            // getData();
+
+                            var obj = {
+                                name: cateName,
+                                slug: cateSlug
+                            }
+                            var reshtml2 = template('tpl2', obj)
+                            $('tbody').append(reshtml2)
+                        }
+
+
+                    }
+
+                })
+                $('#addModal').modal('hide');
+            });
+
+            $('tbody').on('click', '.btn-delete', function (e) {
+                e.preventDefault();
+                $('#myModal').modal();
+                var cateId = $(this).attr('data-id');
+                var that = $(this);
+
+                $('.btn-confirm').click(function () {
+                   
+                    console.log(cateId);
+                    
                     $.post({
-                        url: 'http://localhost:8000/admin/category_add',
+                        url: 'http://localhost:8000/admin/category_delete',
                         data: {
-                            name: cateName,
-                            slug: cateSlug
-
+                            id: cateId
                         },
                         success: function (res) {
                             if (res.code == 200) {
-                                // location.reload();
-                                // getData();
-
-                                var obj = {
-                                    name:cateName,
-                                    slug:cateSlug
-                                }
-                                var reshtml2=template('tpl2',obj)
-                                $('tbody').append(reshtml2)
+                                that.parent().parent().remove();
+                                $('#myModal').modal('hide');
                             }
-
-                           
                         }
-
                     })
-                    $('#addModal').modal('hide');
+
                 });
 
-            });
+
+            })
+
+
+
+        });
+
+
     </script>
 
 </body>
