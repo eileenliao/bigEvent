@@ -320,9 +320,26 @@
                     if (res.code == 200) {
                         var resHtml = template('art_cate', res)
                         $('#selCategory').html(resHtml);
+
                     }
                 }
             });
+
+            var myTotalPage = 10;
+            var $pagination = $('.pagination');
+            var defaultOpts = {
+                totalPages: myTotalPage,
+                visiblePages: 5,
+                first: '首页',
+                last: '尾页',
+                prev: '上一页',
+                next: '下一页',
+                onPageClick: function (event, page) {
+                    getData(page);
+                }
+            };
+            $pagination.twbsPagination(defaultOpts);
+
 
             function getData(myPage) {
                 var category = $('#selCategory').val();
@@ -340,6 +357,18 @@
                         if (res.code == 200) {
                             var resHtml = template('art_list', res);
                             $('tbody').html(resHtml);
+
+
+                            var totalPages = res.totalPage;
+                            if (myTotalPage != totalPages) {
+                                myTotalPage = totalPages;
+                                var currentPage = $pagination.twbsPagination('getCurrentPage');
+                                $pagination.twbsPagination('destroy');
+                                $pagination.twbsPagination($.extend({}, defaultOpts, {
+                                    startPage: 1,
+                                    totalPages: totalPages
+                                }));
+                            }
                         }
 
                     }
@@ -353,19 +382,12 @@
                 getData(1);
             });
 
-            $('#btnSearch').trigger('click')
+            $('#btnSearch').trigger('click');
 
-            $('.pagination').twbsPagination({
-                totalPages: 25,
-                visiblePages: 5,
-                first: '首页',
-                last: '尾页',
-                prev: '上一页',
-                next: '下一页',
-                onPageClick: function (event, page) {
-                    getData(page);
-                }
-            });
+
+
+
+
 
 
         });
