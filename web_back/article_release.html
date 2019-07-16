@@ -12,7 +12,9 @@
     <link rel="stylesheet" href="css/main.css">
     <link type="text/css" rel="stylesheet" href="js/jedate/css/jedate.css">
     <script src="js/jquery-1.12.4.min.js"></script>
+    <script src="./js/template-web.js"></script>
     <script src="js/jedate/js/jedate.js"></script>
+
     <script src="js/tinymce/js/tinymce/tinymce.min.js"></script>
     <script src="js/tinymce/js/tinymce_setup.js"></script>
 </head>
@@ -33,13 +35,14 @@
                 <div class="form-group">
                     <label for="inputPassword3" class="col-sm-2 control-label">文章封面：</label>
                     <div class="col-sm-10">
+                        <img src="./images/2.jpg" style="height:100px" alt=""><br>
                         <input type="file" id="exampleInputFile">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章类别：</label>
                     <div class="col-sm-4">
-                        <select class="form-control">
+                        <select class="form-control article_cate">
                             <option>1</option>
                             <option>2</option>
                             <option>3</option>
@@ -80,6 +83,36 @@
         </div>
     </div>
 
+    <script type="text/html" id="cate-list">
+        {{each data v}}
+            <option value={{v.id}}>{{v.name}}</option>
+
+        {{/each}}
+    </script>
+    <script>
+        $(function() {
+            $('#exampleInputFile').change(function() {
+                var icon = this.files[0];
+                var url = URL.createObjectURL(icon);
+                $(this).prev().prev().attr('src',url)
+            });
+
+            $.get({
+                url:'http://localhost:8000/admin/category_search',
+                success:function(res) {
+                    console.log(res);
+                    if(res.code==200) {
+                        var resHtml = template('cate-list',res);
+                        $('.article_cate').html(resHtml);
+                    }
+                }
+            });
+
+
+        })
+    
+    
+    </script>
 </body>
 
 </html>
