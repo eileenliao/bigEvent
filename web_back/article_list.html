@@ -296,8 +296,8 @@
 
 
             <td class="text-center">
-                <a href="article_edit.html" class="btn btn-default btn-xs">编辑</a>
-                <a href="#" data-id="{{v.id}}" class="btn btn-danger btn-xs">删除</a>
+                <a href="article_edit.html" class="btn btn-default btn-xs ">编辑</a>
+                <a href="#" data-id="{{v.id}}" class="btn btn-danger btn-xs btn-delete">删除</a>
             </td>
         </tr>
 
@@ -358,11 +358,11 @@
                             var resHtml = template('art_list', res);
                             $('tbody').html(resHtml);
 
-
+                            window.currentPage = $pagination.twbsPagination('getCurrentPage');
                             var totalPages = res.totalPage;
                             if (myTotalPage != totalPages) {
                                 myTotalPage = totalPages;
-                                var currentPage = $pagination.twbsPagination('getCurrentPage');
+
                                 $pagination.twbsPagination('destroy');
                                 $pagination.twbsPagination($.extend({}, defaultOpts, {
                                     startPage: 1,
@@ -382,9 +382,26 @@
                 getData(1);
             });
 
-            $('#btnSearch').trigger('click');
+            // $('#btnSearch').trigger('click');
 
 
+            $('tbody').on('click', '.btn-delete', function () {
+
+                if (confirm('请问你是真的要删除吗?')) {
+                    var id = $(this).attr('data-id');
+                    $.get({
+                        url: 'http://localhost:8000/admin/article_delete',
+                        data: {
+                            id: id
+                        },
+                        success: function (res) {
+                            if (res.code == 200) {
+                                getData(currentPage);
+                            }
+                        }
+                    })
+                }
+            })
 
 
 
