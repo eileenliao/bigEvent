@@ -13,6 +13,7 @@
     <link type="text/css" rel="stylesheet" href="js/jedate/css/jedate.css">
     <script src="js/jquery-1.12.4.min.js"></script>
     <script src="js/jedate/js/jedate.js"></script>
+    <script src="js/template-web.js"></script>
     <script src="js/tinymce/js/tinymce/tinymce.min.js"></script>
     <script src="js/tinymce/js/tinymce_setup.js"></script>
 </head>
@@ -27,20 +28,22 @@
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章标题：</label>
                     <div class="col-sm-10">
-                        <input type="email" class="form-control" id="inputEmail3" value="文章标题文字">
+                        <input type="email" name="title" class="form-control artile-title" id="inputEmail3"
+                            value="文章标题文字">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputPassword3" class="col-sm-2 control-label">文章封面：</label>
                     <div class="col-sm-10">
                         <img src="images/pic06.jpg" class="article_cover">
-                        <input type="file" id="exampleInputFile">
+                        <input type="file" name="cover" id="exampleInputFile">
+
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章类别：</label>
                     <div class="col-sm-4">
-                        <select class="form-control">
+                        <select class="form-control article_type" name="type">
                             <option>类别一</option>
                             <option>类别二</option>
                             <option>类别三</option>
@@ -54,30 +57,103 @@
                     <div class="col-sm-4">
 
                         <div class="input-group">
-                            <input type="text" class="form-control" value="2019-05-17" id="dateinput">
-                            <span class="input-group-btn">
+                            <input type="text" class="form-control" name="date" disabled value="2019-05-17"
+                                id="dateinput">
+                            <!-- <span class="input-group-btn">
                                 <button class="btn btn-default" type="button"
                                     onclick="jeDate('#dateinput',{trigger:false,format: 'YYYY-MM-DD'})"><i
                                         class="iconfont icon-icondate"></i></button>
-                            </span>
+                            </span> -->
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="rich_content" name="content" placeholder="文章内容" value="文章内容">
+                        <input type="text" class="form-control" id="rich_content" placeholder="文章内容" value="文章内容">
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" class="btn btn-success">修改</button>
+                        <button type="submit" class="btn btn-success btn-edit">修改</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
+    <script type="text/html" id="art-cate">
+
+        {{each data}} 
+        <option value={{$value.id}}>{{$value.name}}</option>
+
+        {{/each}}
+    
+    </script>
+
+    <script>
+
+        $(function () {
+
+            $.get({
+                url: 'http://localhost:8000/admin/category_search',
+                success: function (res) {
+                    if (res.code == 200) {
+                        var resHtml = template('art-cate', res);
+                        $('.article_type').html(resHtml)
+                    }
+                }
+            });
+
+            var id = window.location.search.split("=")[1];
+            console.log(id);
+
+            $.get({
+                url: 'http://localhost:8000/admin/search',
+                data: {
+                    id: id
+                },
+                success: function (res) {
+                    if (res.code == 200) {
+                        $('.artile-title').val(res.data.title);
+                        $('.article_cover').attr('src', res.data.cover);
+                        $('.article_type').val(res.data.type);
+                        $('#dateinput').val(res.data.date);
+                        $('#rich_content').val(res.data.content)
+                    }
+                }
+            });
+
+            $('#exampleInputFile').change(function () {
+                var icon = this.files[0];
+                var url = URL.createObjectURL(icon);
+                $('.article_cover').attr('src', url)
+            }
+            )
+
+
+            $('.btn-edit').click(function (e) {
+                e.preventDefault();
+                var formData1 = new FormData($('form')[0]);
+                formData1.append('id', id);
+                formData1.append('content', tinyMCE.activeEditor.getContent());
+                $.post({
+                    url: 'http://localhost:8000/admin/article_edit',
+                    data: formData1,
+                    contentType: false,
+                    processData: false,
+                    success: function (res) {
+                        if (res.code == 200) {
+                            alert('修改成功!')
+                        }
+                    }
+                });
+            });
+
+        })
+
+
+    </script>
 </body>
 
 </html>
